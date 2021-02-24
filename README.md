@@ -2,7 +2,7 @@
 
 Example API in goland to retrieve the weather of a specific city. The data is consumed from <http://api.openweathermap.org>
 
-## run the server
+## Run example
 
 go run ./main.go
 

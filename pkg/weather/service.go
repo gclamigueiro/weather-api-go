@@ -7,11 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gclamigueiro/weather-api-go/pkg/config"
 	"github.com/gclamigueiro/weather-api-go/pkg/utility"
 )
-
-const weatherServer = "http://api.openweathermap.org/data/2.5/weather"
-const apiKey = "1508a9a4840a5574c822d70ca2132032"
 
 // transform the data received from openweathermap to the expected structure
 func transformWeatherData(location string, input weatherInput) weatherOutput {
@@ -35,10 +33,18 @@ func transformWeatherData(location string, input weatherInput) weatherOutput {
 	return output
 }
 
+func buildEndpoint(q string) string {
+	weatherServer := config.GetConfig().WeatherServer
+	apiKey := config.GetConfig().ApiKey
+	endpoint := fmt.Sprintf(`%s?q=%s&appid=%s `, weatherServer, q, apiKey)
+	return endpoint
+}
+
 // Return the weather data of a specific city
 func GetWeatherData(city, country string) (string, error) {
+
 	q := fmt.Sprintf(`%s,%s`, city, country)
-	endpoint := fmt.Sprintf(`%s?q=%s&appid=%s `, weatherServer, q, apiKey)
+	endpoint := buildEndpoint(q)
 
 	resp, err := http.Get(endpoint)
 	if err != nil {
