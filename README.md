@@ -4,6 +4,15 @@ Example API in goland to retrieve the weather of a specific city. The data is ob
 
 ## Run example
 
+## create .env
+
+Create .env with this values
+```
+weatherEnpoint = http://api.openweathermap.org/data/2.5/weather
+forecastEndpoint = https://api.openweathermap.org/data/2.5/onecall
+apiKey = {YourApiKey}
+``` 
+
 ### get dependencies
 
 ``` 
