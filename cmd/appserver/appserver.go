@@ -81,7 +81,7 @@ func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 		result, err := weather.GetWeatherData(q, day)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("error calling weather endpoint"))
+			w.Write([]byte("error calling weather endpoint\n"))
 			w.Write([]byte(err.Error()))
 			log.Fatalln(err.Error())
 			return
