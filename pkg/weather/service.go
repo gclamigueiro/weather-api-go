@@ -41,9 +41,8 @@ func buildEndpoint(q string) string {
 }
 
 // Return the weather data of a specific city
-func GetWeatherData(city, country string) (string, error) {
+func GetWeatherData(q string) (string, error) {
 
-	q := fmt.Sprintf(`%s,%s`, city, country)
 	endpoint := buildEndpoint(q)
 
 	resp, err := http.Get(endpoint)

@@ -2,12 +2,23 @@ package appserver
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 
+	"github.com/coocood/freecache"
 	"github.com/gclamigueiro/weather-api-go/pkg/weather"
 )
+
+var cache *freecache.Cache
+
+const expire = 120
+
+func init() {
+	cacheSize := 100 * 1024 * 1024
+	cache = freecache.NewCache(cacheSize)
+}
 
 // Check if a query param exist in request and return the value
 func getQueryParamValue(param string, params url.Values) (string, error) {
@@ -36,16 +47,28 @@ func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	response, err := weather.GetWeatherData(city, country)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error calling weather endpoint"))
-		return
-	}
+	q := fmt.Sprintf(`%s,%s`, city, country)
 
+	entry, inCache := cache.Get([]byte(q))
+
+	var response []byte
+	if inCache == nil {
+		response = entry
+		log.Println("Using cache for " + q)
+	} else {
+		result, err := weather.GetWeatherData(q)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("error calling weather endpoint"))
+			return
+		}
+		response = []byte(result)
+		cache.Set([]byte(q), response, expire)
+		log.Println("Storing in cache " + q)
+	}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(response))
+	w.Write(response)
 }
 
 func routes() {
