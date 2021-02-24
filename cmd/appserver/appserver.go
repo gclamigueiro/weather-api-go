@@ -2,12 +2,11 @@ package appserver
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
 
-	weatherData "github.com/gclamigueiro/weather-api-go/pkg/weather_data"
+	"github.com/gclamigueiro/weather-api-go/pkg/weather"
 )
 
 // Check if a query param exist in request and return the value
@@ -26,27 +25,26 @@ func weatherHandler(w http.ResponseWriter, req *http.Request) {
 	city, err := getQueryParamValue("city", queryParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("the city param  is required"))
+		w.Write([]byte("the city param is required"))
 		return
 	}
 
 	country, err := getQueryParamValue("country", queryParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("the country param  is required"))
+		w.Write([]byte("the country param is required"))
 		return
 	}
 
-	bodyString, err := weatherData.GetWeatherData(city, country)
+	response, err := weather.GetWeatherData(city, country)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("error calling wheather endpoint"))
+		w.Write([]byte("error calling weather endpoint"))
 		return
 	}
 
-	//indentedContent, _ := json.MarshalIndent(bodyString, "", "    ")
 	w.Header().Add("Content-Type", "application/json")
-	fmt.Fprintf(w, string(bodyString))
+	w.Write([]byte(response))
 }
 
 func Start() {
