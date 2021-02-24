@@ -12,8 +12,9 @@ func init() {
 }
 
 type config struct {
-	WeatherServer string
-	ApiKey        string
+	WeatherEndpoint  string
+	ForecastEndpoint string
+	ApiKey           string
 }
 
 // single instance of config object
@@ -24,7 +25,8 @@ func GetConfig() *config {
 	if instance == nil {
 		instance = new(config)
 		instance.ApiKey = os.Getenv("apiKey")
-		instance.WeatherServer = os.Getenv("weatherServer")
+		instance.WeatherEndpoint = os.Getenv("weatherEnpoint")
+		instance.ForecastEndpoint = os.Getenv("forecastEndpoint")
 	}
 
 	return instance

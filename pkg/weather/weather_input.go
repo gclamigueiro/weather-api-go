@@ -1,29 +1,12 @@
 package weather
 
-import "fmt"
-
 // helper structures to get the data from the server
 type weatherInput struct {
 	Coord   coord
 	Weather []weather
 	Main    main
-	Wind    wind
+	Wind    windObj
 	Sys     sys
-}
-
-type coord struct {
-	Lon float32
-	Lat float32
-}
-
-func (t coord) String() string {
-	// expected "[f, f]"
-	return fmt.Sprintf("[%.2f, %.2f]", t.Lon, t.Lat)
-}
-
-type weather struct {
-	Key         string `json:"main"`
-	Description string
 }
 
 type main struct {
@@ -32,23 +15,9 @@ type main struct {
 	Humidity int
 }
 
-func (t main) PressureString() string {
-	// expected 1027 hpa
-	return fmt.Sprintf("%d hpa", t.Pressure)
-}
-func (t main) HumidityString() string {
-	// expected Gentle breeze, 3.6 m/s, west-northwest
-	return fmt.Sprintf("%d%%", t.Humidity)
-}
-
-type wind struct {
+type windObj struct {
 	Speed float32
 	Deg   float32
-}
-
-func (t wind) String() string {
-	// expected Gentle breeze, 3.6 m/s, west-northwest
-	return fmt.Sprintf("%.1f m/s", t.Speed)
 }
 
 type sys struct {
@@ -56,8 +25,36 @@ type sys struct {
 	Sunset  int64
 }
 
+func (t weatherInput) GetTemp() float32 {
+	return t.Main.Temp
+}
+
+func (t weatherInput) GetWind() wind {
+	return wind(t.Wind.Speed)
+}
+
+func (t weatherInput) GetPressure() pressure {
+	return pressure(t.Main.Pressure)
+}
+
+func (t weatherInput) GetHumidity() humidity {
+	return humidity(t.Main.Humidity)
+}
+
+func (t weatherInput) GetSunrise() int64 {
+	return t.Sys.Sunrise
+}
+
+func (t weatherInput) GetSunset() int64 {
+	return t.Sys.Sunset
+}
+
+func (t weatherInput) GetGeoCoordinates() coord {
+	return t.Coord
+}
+
 // search for the key in Weather array
-// it is used to retrieve Cloud Description
+// it is used to retrieve Cloud Description in case exist
 func (input weatherInput) GetWeatherDescription(key string) string {
 	for _, w := range input.Weather {
 		if w.Key == key {

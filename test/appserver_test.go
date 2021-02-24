@@ -21,6 +21,9 @@ func init() {
 func TestWeatherHandler(t *testing.T) {
 	t.Log("Testing WeatherHandler Endpoint .")
 	{
+
+		// TODO create Table tests
+
 		city := "Cali"
 		country := "co"
 
@@ -43,23 +46,7 @@ func TestWeatherHandler(t *testing.T) {
 		}
 		t.Log("\tShould receive \"200\"", checkMark)
 
-		/*u := make(Map[string]string)
+		// TODO validate response
 
-		if err := json.NewDecoder(rw.Body).Decode(&u); err != nil {
-			t.Fatal("\tShould decode the response.", ballotX)
-		}
-		t.Log("\tShould decode the response.", checkMark)
-
-		if u.Name == "Bill" {
-			t.Log("\tShould have a Name.", checkMark)
-		} else {
-			t.Error("\tShould have a Name.", ballotX, u.Name)
-		}
-
-		if u.Email == "bill@ardanstudios.com" {
-			t.Log("\tShould have an Email.", checkMark)
-		} else {
-			t.Error("\tShould have an Email.", ballotX, u.Email)
-		}*/
 	}
 }

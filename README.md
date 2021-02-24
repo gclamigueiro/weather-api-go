@@ -26,6 +26,8 @@ go test ./test -v
 
 <http://localhost:8000/weather?city=Cali&country=co>
 
+<http://localhost:8000/weather?city=Bogota&country=co&forecastday=2>
+
 ## Example of json received from openweathermap (only used fields)
 
 ```json

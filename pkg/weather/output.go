@@ -1,7 +1,7 @@
 package weather
 
 // structure that represents the response expected by the client
-type weatherOutput struct {
+type output struct {
 	LocationName   string `json:"location_name"`
 	Temperature    string `json:"temperature"`
 	Wind           string `json:"wind"`
