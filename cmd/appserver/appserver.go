@@ -18,7 +18,7 @@ func getQueryParamValue(param string, params url.Values) (string, error) {
 	return value[0], nil
 }
 
-func weatherHandler(w http.ResponseWriter, req *http.Request) {
+func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 
 	queryParams := req.URL.Query()
 
@@ -44,11 +44,16 @@ func weatherHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(response))
 }
 
+func routes() {
+	http.HandleFunc("/weather", WeatherHandler)
+}
+
 func Start() {
-	http.HandleFunc("/weather", weatherHandler)
+	routes()
 	log.Println("Listing for requests at http://localhost:8000/weather")
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

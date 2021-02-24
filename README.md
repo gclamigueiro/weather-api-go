@@ -4,7 +4,23 @@ Example API in goland to retrieve the weather of a specific city. The data is co
 
 ## Run example
 
-go run ./main.go
+### get dependencies
+
+``` 
+go mod tidy 
+```
+
+### run
+
+```
+go run ./main.go 
+```
+
+## Run Test
+
+```
+go test ./test -v
+```
 
 ## Example url for testing
 
