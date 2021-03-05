@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	appserver.Start()
+	server := appserver.NewServer()
+	server.Start()
 }

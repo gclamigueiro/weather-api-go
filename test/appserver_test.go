@@ -22,6 +22,8 @@ func TestWeatherHandler(t *testing.T) {
 	t.Log("Testing WeatherHandler Endpoint .")
 	{
 
+		server := appserver.NewServer()
+
 		// TODO create Table tests
 
 		city := "Cali"
@@ -38,7 +40,7 @@ func TestWeatherHandler(t *testing.T) {
 			checkMark)
 
 		rw := httptest.NewRecorder()
-		handler := http.HandlerFunc(appserver.WeatherHandler)
+		handler := http.HandlerFunc(server.WeatherHandler)
 		handler.ServeHTTP(rw, req)
 
 		if rw.Code != 200 {

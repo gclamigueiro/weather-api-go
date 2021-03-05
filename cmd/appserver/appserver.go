@@ -12,43 +12,56 @@ import (
 	"github.com/gclamigueiro/weather-api-go/pkg/weather"
 )
 
-var cache *freecache.Cache
-
-const expire = 120
-
 func init() {
+
+}
+
+type Server struct {
+	wheatherService weather.Service
+	cache           *freecache.Cache
+	expire          int
+}
+
+func NewServer() *Server {
 	cacheSize := 100 * 1024 * 1024
-	cache = freecache.NewCache(cacheSize)
-}
+	cache := freecache.NewCache(cacheSize)
+	weatherService := weather.NewWeatherService()
 
-// Check if a query param exist in request and return the value
-func getQueryParamValue(param string, params url.Values) (string, error) {
-	value, ok := params[param]
-	if !ok || len(value) < 1 {
-		return "", errors.New("parameter not found")
+	return &Server{
+		cache:           cache,
+		expire:          120,
+		wheatherService: weatherService,
 	}
-	return value[0], nil
 }
 
-func WeatherHandler(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Start() {
+	s.routes()
+	log.Println("Listing for requests at http://localhost:8000/weather")
+	log.Fatal(http.ListenAndServe(":8000", nil))
+}
+
+func (s *Server) routes() {
+	http.HandleFunc("/weather", s.WeatherHandler)
+}
+
+func (s *Server) WeatherHandler(w http.ResponseWriter, req *http.Request) {
 
 	queryParams := req.URL.Query()
 
-	city, err := getQueryParamValue("city", queryParams)
+	city, err := s.getQueryParamValue("city", queryParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("the city param is required"))
 		return
 	}
 
-	country, err := getQueryParamValue("country", queryParams)
+	country, err := s.getQueryParamValue("country", queryParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("the country param is required"))
 		return
 	}
-
-	forecastday, _ := getQueryParamValue("forecastday", queryParams)
+	forecastday, _ := s.getQueryParamValue("forecastday", queryParams)
 	var day int
 
 	if forecastday != "" {
@@ -71,14 +84,15 @@ func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 	q := fmt.Sprintf(`%s,%s`, city, country)
 	cacheKey := fmt.Sprintf(`%s,%d`, q, day)
 
-	entry, inCache := cache.Get([]byte(cacheKey))
+	entry, inCache := s.getFromCache(cacheKey)
 
 	var response []byte
 	if inCache == nil {
 		response = entry
 		log.Println("Using cache for " + cacheKey)
 	} else {
-		result, err := weather.GetWeatherData(q, day)
+		result, err := s.wheatherService.GetWeatherData(q, day)
+
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("error calling weather endpoint\n"))
@@ -87,8 +101,7 @@ func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		response = []byte(result)
-		cache.Set([]byte(cacheKey), response, expire)
-		log.Println("Storing in cache " + cacheKey)
+		s.addToCache(cacheKey, response)
 	}
 
 	w.Header().Add("Content-Type", "application/json")
@@ -96,12 +109,21 @@ func WeatherHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(response)
 }
 
-func routes() {
-	http.HandleFunc("/weather", WeatherHandler)
+// Check if a query param exist in request and return the value
+func (s *Server) getQueryParamValue(param string, params url.Values) (string, error) {
+	value, ok := params[param]
+	if !ok || len(value) < 1 {
+		return "", errors.New("parameter not found")
+	}
+	return value[0], nil
 }
 
-func Start() {
-	routes()
-	log.Println("Listing for requests at http://localhost:8000/weather")
-	log.Fatal(http.ListenAndServe(":8000", nil))
+func (s *Server) getFromCache(key string) ([]byte, error) {
+	value, err := s.cache.Get([]byte(key))
+	return value, err
+}
+
+func (s *Server) addToCache(key string, response []byte) {
+	log.Println("Storing in cache " + key)
+	s.cache.Set([]byte(key), response, s.expire)
 }
